@@ -125,8 +125,7 @@ while True:
 			#get distance for each pixel
 			dMM = get_distance_pixels(depthOriginal)
 			#print distance for a center pixel of sphere
-			if(i[0] < 600):
-				print dMM[int(round(i[1]))][int(round(i[0])) + 20]
+			print dMM[int(round(i[1]))][int(round(i[0]))]
 			
 			
 			# draw a circle around the object in the original image
