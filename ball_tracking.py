@@ -14,18 +14,26 @@
 
 
 #Values for Red ball
-# hmin	160
-# hmax 	180
-# vmin	171
-# vmax	208
-# smin	170
-# smax	255
+hmin = 163
+hmax = 180
+vmin = 176
+vmax = 200
+smin = 139
+smax = 224
 
+#Values Helosman Experiment
+# hmin 144
+# hmax 255
+# smin 196
+# smax 255
+# vmin 131
+# vmax 191
 
 #impor required libraries
 import numpy as np # numpy for array manipulation
 import cv2	#OpenCv
 import cv2.cv as cv #Open Cv
+import math
 
 import freenect # Kinect free library
 
@@ -47,10 +55,21 @@ def get_depth():
     array = array.astype(np.uint8)
     return array
 
-#function to get distances in mm, equation from OpenKinect    
-def get_distance_pixels(depthRaw):
-	depthMM = (depthRaw != 0) * 1000.0/(-0.00307 * depthRaw + 3.33)
-	return depthMM
+#function to get distances in cm, equation from OpenKinect    
+def get_distance_St(depthRaw):
+	depthM = 0.1236 * math.tan(depthRaw / 2842.5 + 1.1863)
+	return depthM * 100
+
+#function to cal real X from pixel and Z distance in centimeters
+def calcXCM(pixelX, distZ):
+	xCm = (pixelX - 320) * (distZ - 10) * 0.0021
+	return xCm
+	
+#function to cal real Y from pixel and Z distance in centimeters	
+def calcYCM(pixelY, distZ):
+	yCm = (pixelY - 240) * (distZ - 10) * 0.0021
+	return yCm
+
 # function to be passed as parameter in trackBars initialization
 def nothing(x):
     pass
@@ -78,8 +97,20 @@ cv2.createTrackbar('smax', 'SatAdj',255,255,nothing)
 cv2.createTrackbar('vmin', 'ValAdj',0,255,nothing)
 cv2.createTrackbar('vmax', 'ValAdj',255,255,nothing)
 
+cv2.setTrackbarPos('hmin','HueAdj', hmin)
+cv2.setTrackbarPos('hmax', 'HueAdj', hmax)
+cv2.setTrackbarPos('smin', 'SatAdj', smin)
+cv2.setTrackbarPos('smax', 'SatAdj', smax)
+cv2.setTrackbarPos('vmin', 'ValAdj', vmin)
+cv2.setTrackbarPos('vmax', 'ValAdj', vmax)
+
+logData = open('MAX.txt', 'w')
+
+
+countData = 0
+
 #infinity loop
-while True:
+while countData < 100:
 
 	frame = get_video() #get RGB image from kinect
 	depth = get_depth() #get Depth image normalized from kinect, just to show
@@ -92,12 +123,12 @@ while True:
 	hue,sat,val = cv2.split(hsv)
 	
 	# get values min and max from trackBars 
-	hmn = cv2.getTrackbarPos('hmin','HueAdj')
-	hmx = cv2.getTrackbarPos('hmax','HueAdj')
-	smn = cv2.getTrackbarPos('smin','SatAdj')
-	smx = cv2.getTrackbarPos('smax','SatAdj')
-	vmn = cv2.getTrackbarPos('vmin','ValAdj')
-	vmx = cv2.getTrackbarPos('vmax','ValAdj')
+	hmn = cv2.getTrackbarPos('hmin','HueAdj') #144#
+	hmx = cv2.getTrackbarPos('hmax','HueAdj') #180#
+	smn = cv2.getTrackbarPos('smin','SatAdj') #196#
+	smx = cv2.getTrackbarPos('smax','SatAdj') #255#
+	vmn = cv2.getTrackbarPos('vmin','ValAdj') #131#
+	vmx = cv2.getTrackbarPos('vmax','ValAdj') #191#
 	
 	# Apply thresholding
 	hthresh = cv2.inRange(np.array(hue),np.array(hmn),np.array(hmx))
@@ -119,14 +150,21 @@ while True:
 	
 	if circles is not None:
 		for i in circles[0,:]:
-			draw_str(frame,(int(round(i[1]+i[2])), int(round(i[0]+i[2]))), 'x: ' + str(i[0]) + ' y: ' + str(i[1]))
+			#draw_str(frame,(int(round(i[1]+i[2])), int(round(i[0]+i[2]))), 'x: ' + str(i[0]) + ' y: ' + str(i[1]))
 			
 
 			#get distance for each pixel
-			dMM = get_distance_pixels(depthOriginal)
+			
 			#print distance for a center pixel of sphere
 			if(i[0] < 600):
-				print dMM[int(round(i[1]))][int(round(i[0])) + 20]
+				zCM = get_distance_St(depthOriginal[int(round(i[1]))][int(round(i[0])) + 25])
+				draw_str(frame, (int(round(i[1]+i[2])), int(round(i[0]+i[2]))), '%.2f' % zCM)
+				xCM = calcXCM(i[0],zCM)
+				yCM = calcYCM(i[1],zCM)
+				print 'x: %f y: %f z: %f' % (xCM, yCM, zCM)
+				#print zCM
+				#logData.write('%.4f\n' % zCM)
+				#countData = countData + 1
 			
 			
 			# draw a circle around the object in the original image
@@ -144,7 +182,9 @@ while True:
 	cv2.imshow('Closing',closing)
 	cv2.imshow('Original',frame)
 	cv2.imshow('Depth', depth)
-	
+		
 	#wait some time
 	key_pressed = cv2.waitKey(1)
+	
+logData.close()
 
