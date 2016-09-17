@@ -68,7 +68,7 @@ def calcXCM(pixelX, distZ):
 #function to cal real Y from pixel and Z distance in centimeters	
 def calcYCM(pixelY, distZ):
 	yCm = (pixelY - 240) * (distZ - 10) * 0.0021
-	return yCm
+	return -yCm
 
 # function to be passed as parameter in trackBars initialization
 def nothing(x):
@@ -146,7 +146,7 @@ while countData < 100:
 	
 	
 	# Detect circles using HoughCircles
-	circles = cv2.HoughCircles(closing,cv.CV_HOUGH_GRADIENT,2,120,param1=120,param2=50,minRadius=5,maxRadius=0)
+	circles = cv2.HoughCircles(closing,cv.CV_HOUGH_GRADIENT,2,120,param1=120,param2=50,minRadius=2,maxRadius=0)
 	
 	if circles is not None:
 		for i in circles[0,:]:
@@ -157,15 +157,15 @@ while countData < 100:
 			
 			#print distance for a center pixel of sphere
 			if(i[0] < 600):
-				zCM = get_distance_St(depthOriginal[int(round(i[1]))][int(round(i[0])) + i[2]])
+				zCM = get_distance_St(depthOriginal[int(round(i[1])) - i[2]][int(round(i[0])) + i[2]])
 				#draw_str(frame, (int(round(i[1]+i[2])), int(round(i[0]+i[2]))), '%.2f' % zCM)
 				print i[2]
 				xCM = calcXCM(i[0],zCM)
 				yCM = calcYCM(i[1],zCM)
-				draw_str(frame, (int(round(i[1]+i[2])), int(round(i[0]+i[2]))), 'x: %.2f y: %.2f' % (xCM, yCM))
-				print 'x: %f y: %f z: %f' % (xCM, yCM, zCM)
+				draw_str(frame, (int(round(i[0]+i[2])), int(round(i[1]+i[2]))), 'x: %.2f y: %.2f z: %.2f' % (xCM, yCM, zCM))
+				#print 'x: %f y: %f z: %f' % (xCM, yCM, zCM)
 				#print zCM
-				#logData.write('%.4f\n' % zCM)
+				logData.write('%.2f\t%.2f\t%.2f\n' % zCM)
 				#countData = countData + 1
 			
 			
@@ -178,8 +178,8 @@ while countData < 100:
 			cv2.circle(depth,(int(round(i[0])),int(round(i[1]))),2,(0,0,255),10)
 
 	#draw center coordinates
-	cv2.line(frame, (300,240),(340,240),(0,0,255)) 
-	cv2.line(frame, (320,220),(320,260),(0,0,255))
+	cv2.line(frame, (300,240),(340,240),(255,0,0),2) 
+	cv2.line(frame, (320,220),(320,260),(255,0,0),2)
     #Show the result  frames
 	cv2.imshow('HueAdj',hthresh)
 	cv2.imshow('SatAdj',sthresh)
