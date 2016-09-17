@@ -104,7 +104,7 @@ cv2.setTrackbarPos('smax', 'SatAdj', smax)
 cv2.setTrackbarPos('vmin', 'ValAdj', vmin)
 cv2.setTrackbarPos('vmax', 'ValAdj', vmax)
 
-logData = open('MAX.txt', 'w')
+logData = open('XYZ.txt', 'w')
 
 
 countData = 0
@@ -165,7 +165,7 @@ while countData < 100:
 				draw_str(frame, (int(round(i[0]+i[2])), int(round(i[1]+i[2]))), 'x: %.2f y: %.2f z: %.2f' % (xCM, yCM, zCM))
 				#print 'x: %f y: %f z: %f' % (xCM, yCM, zCM)
 				#print zCM
-				logData.write('%.2f\t%.2f\t%.2f\n' % zCM)
+				logData.write('%.2f\t%.2f\t%.2f\n' % (xCM, yCM, zCM))
 				#countData = countData + 1
 			
 			
