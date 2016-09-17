@@ -16,8 +16,8 @@
 #Values for Red ball
 hmin = 163
 hmax = 180
-vmin = 176
-vmax = 200
+vmin = 113
+vmax = 152
 smin = 139
 smax = 224
 
@@ -146,7 +146,7 @@ while countData < 100:
 	
 	
 	# Detect circles using HoughCircles
-	circles = cv2.HoughCircles(closing,cv.CV_HOUGH_GRADIENT,2,120,param1=120,param2=50,minRadius=10,maxRadius=0)
+	circles = cv2.HoughCircles(closing,cv.CV_HOUGH_GRADIENT,2,120,param1=120,param2=50,minRadius=5,maxRadius=0)
 	
 	if circles is not None:
 		for i in circles[0,:]:
@@ -157,10 +157,12 @@ while countData < 100:
 			
 			#print distance for a center pixel of sphere
 			if(i[0] < 600):
-				zCM = get_distance_St(depthOriginal[int(round(i[1]))][int(round(i[0])) + 25])
-				draw_str(frame, (int(round(i[1]+i[2])), int(round(i[0]+i[2]))), '%.2f' % zCM)
+				zCM = get_distance_St(depthOriginal[int(round(i[1]))][int(round(i[0])) + i[2]])
+				#draw_str(frame, (int(round(i[1]+i[2])), int(round(i[0]+i[2]))), '%.2f' % zCM)
+				print i[2]
 				xCM = calcXCM(i[0],zCM)
 				yCM = calcYCM(i[1],zCM)
+				draw_str(frame, (int(round(i[1]+i[2])), int(round(i[0]+i[2]))), 'x: %.2f y: %.2f' % (xCM, yCM))
 				print 'x: %f y: %f z: %f' % (xCM, yCM, zCM)
 				#print zCM
 				#logData.write('%.4f\n' % zCM)
@@ -175,6 +177,9 @@ while countData < 100:
 			cv2.circle(depth,(int(round(i[0])),int(round(i[1]))),int(round(i[2])),(0,255,0),5)
 			cv2.circle(depth,(int(round(i[0])),int(round(i[1]))),2,(0,0,255),10)
 
+	#draw center coordinates
+	cv2.line(frame, (300,240),(340,240),(0,0,255)) 
+	cv2.line(frame, (320,220),(320,260),(0,0,255))
     #Show the result  frames
 	cv2.imshow('HueAdj',hthresh)
 	cv2.imshow('SatAdj',sthresh)
