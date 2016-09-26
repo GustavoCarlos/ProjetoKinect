@@ -17,9 +17,9 @@
 hmin = 163
 hmax = 180
 vmin = 113
-vmax = 152
-smin = 139
-smax = 224
+vmax = 199#152
+smin = 120#139
+smax = 231#224
 
 #Values Helosman Experiment
 # hmin 144
@@ -36,6 +36,8 @@ import cv2.cv as cv #Open Cv
 import math
 
 import freenect # Kinect free library
+
+import timeit
 
 # function to write a string in a frame
 def draw_str(dst, (x, y), s):
@@ -104,14 +106,15 @@ cv2.setTrackbarPos('smax', 'SatAdj', smax)
 cv2.setTrackbarPos('vmin', 'ValAdj', vmin)
 cv2.setTrackbarPos('vmax', 'ValAdj', vmax)
 
-logData = open('XYZ.txt', 'w')
+logData = open('z200y20.txt', 'w')
 
 
 countData = 0
 
-#infinity loop
 while countData < 100:
-
+	#startTime = timeit.default_timer()
+	#endTime = timeit.default_timer()
+	#elapsedTime = endTime - startTime
 	frame = get_video() #get RGB image from kinect
 	depth = get_depth() #get Depth image normalized from kinect, just to show
 	
@@ -165,8 +168,9 @@ while countData < 100:
 				draw_str(frame, (int(round(i[0]+i[2])), int(round(i[1]+i[2]))), 'x: %.2f y: %.2f z: %.2f' % (xCM, yCM, zCM))
 				#print 'x: %f y: %f z: %f' % (xCM, yCM, zCM)
 				#print zCM
-				logData.write('%.2f\t%.2f\t%.2f\n' % (xCM, yCM, zCM))
-				#countData = countData + 1
+				#logData.write('%.2f\t%.2f\t%.2f\n' % (xCM, yCM, zCM))
+				logData.write('%.2f\n' % yCM)
+				countData = countData + 1
 			
 			
 			# draw a circle around the object in the original image
